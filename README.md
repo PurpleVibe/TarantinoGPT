@@ -21,7 +21,7 @@ Agent for Tarantino specific questions!
 
 ## Data loading and Preprocessing 
 
-- Data: 2 full movies PDF scripts (Pulp fiction and Reservoir dogs, my favorite Tarantino movies) and 6 HTML URLs about his Tarantino's life (for example Wikipedia), Articals (interview and directing analysis, etc..) and user reviews.
+- Data: 2 full movie PDF scripts (Pulp fiction and Reservoir dogs, my favorite Tarantino movies) and 6 HTML URLs about Tarantino's life (for example Wikipedia), Articals (interview and directing analysis, etc..) and user reviews.
 
 - Loaders:
     - PDF: UnstructuredPDFLoader(strategy=\"fast\") for speed and reasonable accuracy; Preproccessing text cleaning before embedding (for example: removing white space), metadata enriched with source and title for citations.
@@ -81,7 +81,7 @@ Agent for Tarantino specific questions!
 
 ## How we addressed naive RAG pitfalls
 
-- Poor recall from single, literal queries, expanding context > Query expansion (multi‑formulations merged and deduped).
+- Poor recall from single, literal queries, low context > Query expansion (multi‑formulations merged and deduped).
 
 - Redundant or near‑duplicate chunks > MMR retriever + signature‑based dedup across expansions.
 
@@ -98,7 +98,7 @@ Agent for Tarantino specific questions!
     - Python: 3.12+
     - OpenAI API key: set OPENAI_API_KEY in a .env file at the repo root
 
-- Run: install.bat (installs requirements and create python environment) and run.bat (runs backend api and frontend UI).
+- Run: install.bat (installs requirements and create python environment) and then run.bat (runs backend api and frontend UI).
 
   <img width="728" height="392" alt="image" src="https://github.com/user-attachments/assets/65968079-5ce2-438e-a1b5-d8e664b25d93" />
 
