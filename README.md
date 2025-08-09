@@ -6,8 +6,9 @@ Agent for Tarantino specific questions!
 - General overview
         - Purpose: domain-focused chatbot using RAG with LangGraph.
         - High-level flow: Flow: user → Streamlit UI → FastAPI → LangGraph agent → retriever (Chroma) → LLM (OpenAI) → response; session history stored in-memory.
-- System diagram
-    * TOADD: diagram
+- System diagram -
+     <img width="1026" height="657" alt="image" src="https://github.com/user-attachments/assets/b6307df4-cfb3-45f3-984b-dc1df3b9129f" />
+
 
 - Frontend–backend separation: Thin UI client communicates with a stateless HTTP API. All model execution, retrieval, and orchestration live on the backend.
 
@@ -97,10 +98,14 @@ Agent for Tarantino specific questions!
     - Python: 3.12+
     - OpenAI API key: set OPENAI_API_KEY in a .env file at the repo root
 
-- Run: install.bat and run.bat
+- Run: install.bat (installs requirements and create python environment) and run.bat (runs backend api and frontend UI).
+
+  <img width="728" height="392" alt="image" src="https://github.com/user-attachments/assets/65968079-5ce2-438e-a1b5-d8e664b25d93" />
+
 
 - Visit: http://localhost:8501
 
 Demo video:
 
-* TOADD
+https://github.com/user-attachments/assets/bd520b0f-148f-4b92-bdb2-3575532c784d
+
