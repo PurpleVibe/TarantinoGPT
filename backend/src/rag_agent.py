@@ -63,6 +63,7 @@ def generate_expanded_queries(question: str, num: int = 3) -> List[str]:
     # Keep only first num unique lines
     seen: Set[str] = set()
     expansions: List[str] = []
+    # build a list of expandedqueries 
     for ln in lines:
         if ln.lower() not in seen:
             expansions.append(ln)
@@ -86,10 +87,12 @@ def retrieve_expanded(retriever, question: str, expansions: int = 3, per_query_k
     queries = [question] + generate_expanded_queries(question, num=expansions)
     merged: List = []
     seen_sigs: Set[Tuple[str, Optional[int], str]] = set()
+    # retrieve per expansion
     for q in queries:
         docs = retriever.invoke(q)
         # limit per-query
         docs = docs[:per_query_k]
+        # dedupe
         for d in docs:
             sig = _doc_signature(d)
             if sig not in seen_sigs:
@@ -109,6 +112,7 @@ def build_retriever(
 ):
     """Prepare the retriever for the agent."""
     embeddings = get_embeddings()
+    # if the vectorstore already exists, load it
     if (not force_rebuild) and Path(persist_dir).exists() and any(Path(persist_dir).iterdir()):
         vectorstore = load_vectorstore(
             persist_directory=persist_dir,
@@ -134,7 +138,7 @@ def build_retriever(
         )
     return get_retriever(vectorstore, k=k, search_type="mmr")
 
-
+# get metadata for the document
 def _format_header(i: int, doc) -> str:
     title = doc.metadata.get("title") or doc.metadata.get("source", "unknown")
     src = str(doc.metadata.get("source", ""))
@@ -189,6 +193,8 @@ def create_agent(web_urls: Optional[List[str]] = None, k: int = 10, force_rebuil
             results.append(ToolMessage(tool_call_id=t["id"], name=t["name"], content=str(result)))
         return {"messages": results}
 
+    # Create the graph for the agent
+    # Simple state graph with two nodes: llm and retriever_agent
     graph = StateGraph(AgentState)
     graph.add_node("llm", call_llm)
     graph.add_node("retriever_agent", take_action)
@@ -201,18 +207,34 @@ def create_agent(web_urls: Optional[List[str]] = None, k: int = 10, force_rebuil
 
 
 def run_query(question: str, web_urls: Optional[List[str]] = None):
+    """Run the agent with the given question."""
     agent = create_agent(web_urls=web_urls)
     messages = [HumanMessage(content=question)]
     result = agent.invoke({"messages": messages})
     return result["messages"][-1].content
 
 
-def run_query_with_history(question: str, history: Optional[Sequence[BaseMessage]] = None, web_urls: Optional[List[str]] = None) -> str:
-    """Run the agent with prior conversation history."""
+def run_query_with_history(
+    question: str,
+    history: Optional[Sequence[BaseMessage]] = None,
+    web_urls: Optional[List[str]] = None,
+    max_history_messages: Optional[int] = None,
+) -> str:
+    """Run the agent with prior conversation history.
+
+    If `max_history_messages` is provided, only the most recent N messages from
+    `history` are included (preserving order). If set to 0 or a negative value,
+    the history is ignored. If `None`, the full provided history is used.
+    """
     agent = create_agent(web_urls=web_urls)
     messages: List[BaseMessage] = []
     if history:
-        messages.extend(history)
+        if max_history_messages is None:
+            messages.extend(history)
+        elif max_history_messages <= 0:
+            pass  # explicitly ignore history
+        else:
+            messages.extend(history[-max_history_messages:])
     messages.append(HumanMessage(content=question))
     result = agent.invoke({"messages": messages})
     return result["messages"][-1].content

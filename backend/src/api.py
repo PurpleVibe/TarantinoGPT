@@ -24,7 +24,7 @@ class QueryOut(BaseModel):
 def query(payload: QueryIn):
     session_id = payload.session_id or DEFAULT_SESSION
     history = SESSIONS.get(session_id, [])
-    answer = run_query_with_history(payload.question, history=history)
+    answer = run_query_with_history(payload.question, history=history, max_history_messages=5)
     # update history
     history = history + [HumanMessage(content=payload.question), AIMessage(content=answer)]
     SESSIONS[session_id] = history
@@ -34,6 +34,10 @@ def query(payload: QueryIn):
 def query_stream(payload: QueryIn):
     session_id = payload.session_id or DEFAULT_SESSION
     history = SESSIONS.get(session_id, [])
+    # Keep only the last N messages for consistency with non-streaming endpoint
+    max_history_messages = 5
+    if max_history_messages is not None and max_history_messages > 0:
+        history = history[-max_history_messages:]
 
     def generator():
         buffer = []
